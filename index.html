@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Lens-lite</title>
+<style>
+body {
+  margin:0;
+  background:#0e0e12;
+  color:white;
+  font-family:system-ui;
+}
+#card {
+  margin:12px;
+  padding:14px;
+  border-radius:16px;
+  background:rgba(255,255,255,.08);
+  backdrop-filter:blur(20px);
+}
+pre {
+  white-space:pre-wrap;
+  font-size:13px;
+}
+button {
+  width:100%;
+  padding:10px;
+  margin-top:8px;
+  border-radius:10px;
+  border:none;
+  background:#4cc9f0;
+  font-weight:600;
+}
+</style>
+</head>
+<body>
+
+<div id="card">
+  <b>Lens-lite</b>
+  <div id="status">Preparing…</div>
+  <button id="auth">Connect with Pollinations</button>
+  <pre id="out"></pre>
+</div>
+
+<script>
+const params=new URLSearchParams(location.hash.slice(1));
+const x=+params.get('x'),y=+params.get('y');
+const w=+params.get('w'),h=+params.get('h');
+
+let apiKey=new URLSearchParams(location.hash.slice(1)).get('api_key')
+  || localStorage.apiKey;
+
+if(apiKey) localStorage.apiKey=apiKey;
+
+document.getElementById('auth').onclick=()=>{
+  location.href=
+    'https://enter.pollinations.ai/authorize?'+
+    'redirect_url='+encodeURIComponent(location.href)+
+    '&models=openai&expiry=7';
+};
+
+async function run(){
+  if(!apiKey){
+    document.getElementById('status').textContent='Connect Pollinations ↑';
+    return;
+  }
+
+  document.getElementById('status').textContent='Select this tab…';
+
+  const stream=await navigator.mediaDevices.getDisplayMedia({
+    video:{frameRate:30},
+    audio:false
+  });
+
+  const video=document.createElement('video');
+  video.srcObject=stream;
+  await video.play();
+
+  const canvas=document.createElement('canvas');
+  canvas.width=w; canvas.height=h;
+  canvas.getContext('2d')
+    .drawImage(video,x,y,w,h,0,0,w,h);
+
+  stream.getTracks().forEach(t=>t.stop());
+
+  const image=canvas.toDataURL();
+
+  document.getElementById('status').textContent='Explaining…';
+
+  const res=await fetch(
+    'https://gen.pollinations.ai/v1/chat/completions',
+    {
+      method:'POST',
+      headers:{
+        'Authorization':'Bearer '+apiKey,
+        'Content-Type':'application/json'
+      },
+      body:JSON.stringify({
+        model:'openai',
+        messages:[{
+          role:'user',
+          content:[
+            {type:'text',text:'Explain what is in this screenshot'},
+            {type:'image_url',image_url:{url:image}}
+          ]
+        }]
+      })
+    }
+  );
+
+  const json=await res.json();
+  document.getElementById('out').textContent=
+    json.choices[0].message.content;
+}
+
+run();
+</script>
+</body>
+</html>
