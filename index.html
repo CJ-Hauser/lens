@@ -1,118 +1,219 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="utf-8">
-<title>Lens-lite</title>
+<meta charset="UTF-8">
+<title>CJlens</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="manifest.json">
 <style>
+:root {
+  --bg: #0b0d12;
+  --fg: #fff;
+  --card: rgba(255,255,255,.08);
+  --accent: #4cc9f0;
+}
+body.light {
+  --bg: #fff;
+  --fg: #000;
+  --card: rgba(0,0,0,.05);
+  --accent: #0066cc;
+}
 body {
   margin:0;
-  background:#0e0e12;
-  color:white;
-  font-family:system-ui;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: system-ui;
 }
-#card {
-  margin:12px;
-  padding:14px;
-  border-radius:16px;
-  background:rgba(255,255,255,.08);
-  backdrop-filter:blur(20px);
-}
-pre {
-  white-space:pre-wrap;
-  font-size:13px;
+#app {
+  max-width: 480px;
+  margin: 40px auto;
+  padding: 16px;
+  border-radius: 18px;
+  background: var(--card);
+  backdrop-filter: blur(18px);
 }
 button {
-  width:100%;
-  padding:10px;
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: none;
+  font-weight: 600;
+  background: var(--accent);
+  color: var(--fg);
+  margin-top: 8px;
+  cursor: pointer;
+}
+#stage {
+  margin-top:12px;
+  height:220px;
+  border:2px dashed rgba(255,255,255,.3);
+  border-radius:14px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:14px;
+  opacity:.7;
+  position: relative;
+}
+#overlay {
+  position: fixed;
+  inset:0;
+  display:none;
+  z-index:9999;
+  cursor: crosshair;
+}
+#box {
+  position:absolute;
+  border:2px dashed var(--accent);
+  background:rgba(76,201,240,.2);
+  resize: both;
+  overflow: hidden;
+}
+pre {
+  white-space: pre-wrap;
+  font-size:13px;
   margin-top:8px;
-  border-radius:10px;
-  border:none;
-  background:#4cc9f0;
-  font-weight:600;
+  max-height:250px;
+  overflow:auto;
+}
+#theme-toggle {
+  margin-top:8px;
 }
 </style>
 </head>
 <body>
 
-<div id="card">
-  <b>Lens-lite</b>
-  <div id="status">Preparing…</div>
-  <button id="auth">Connect with Pollinations</button>
+<div id="app">
+  <h3>Lens-lite v2</h3>
+  <button id="auth">Connect with Pollinations (BYOP)</button>
+  <button id="start">Select Area & Explain</button>
+  <button id="theme-toggle">Toggle Dark/Light</button>
+  <div id="stage">No screenshot yet</div>
   <pre id="out"></pre>
 </div>
 
+<div id="overlay">
+  <div id="box"></div>
+</div>
+
 <script>
-const params=new URLSearchParams(location.hash.slice(1));
-const x=+params.get('x'),y=+params.get('y');
-const w=+params.get('w'),h=+params.get('h');
-
-let apiKey=new URLSearchParams(location.hash.slice(1)).get('api_key')
-  || localStorage.apiKey;
-
-if(apiKey) localStorage.apiKey=apiKey;
-
-document.getElementById('auth').onclick=()=>{
-  location.href=
-    'https://enter.pollinations.ai/authorize?'+
-    'redirect_url='+encodeURIComponent(location.href)+
-    '&models=openai&expiry=7';
+// ===== Theme toggle =====
+document.getElementById('theme-toggle').onclick = () => {
+  document.body.classList.toggle('light');
 };
 
-async function run(){
-  if(!apiKey){
-    document.getElementById('status').textContent='Connect Pollinations ↑';
-    return;
-  }
-
-  document.getElementById('status').textContent='Select this tab…';
-
-  const stream=await navigator.mediaDevices.getDisplayMedia({
-    video:{frameRate:30},
-    audio:false
-  });
-
-  const video=document.createElement('video');
-  video.srcObject=stream;
-  await video.play();
-
-  const canvas=document.createElement('canvas');
-  canvas.width=w; canvas.height=h;
-  canvas.getContext('2d')
-    .drawImage(video,x,y,w,h,0,0,w,h);
-
-  stream.getTracks().forEach(t=>t.stop());
-
-  const image=canvas.toDataURL();
-
-  document.getElementById('status').textContent='Explaining…';
-
-  const res=await fetch(
-    'https://gen.pollinations.ai/v1/chat/completions',
-    {
-      method:'POST',
-      headers:{
-        'Authorization':'Bearer '+apiKey,
-        'Content-Type':'application/json'
-      },
-      body:JSON.stringify({
-        model:'openai',
-        messages:[{
-          role:'user',
-          content:[
-            {type:'text',text:'Explain what is in this screenshot'},
-            {type:'image_url',image_url:{url:image}}
-          ]
-        }]
-      })
-    }
-  );
-
-  const json=await res.json();
-  document.getElementById('out').textContent=
-    json.choices[0].message.content;
+// ===== BYOP Auth =====
+const authBtn = document.getElementById('auth');
+let apiKey = localStorage.apiKey || null;
+authBtn.onclick = () => {
+  const redirect = encodeURIComponent(location.href);
+  const url = `https://enter.pollinations.ai/authorize?redirect_url=${redirect}&permissions=profile,balance&models=openai`;
+  window.open(url,'_blank');
+};
+const hashKey = new URLSearchParams(location.hash.slice(1)).get('api_key');
+if(hashKey){
+  apiKey = hashKey;
+  localStorage.apiKey = apiKey;
+  document.getElementById('out').textContent = '✅ Connected!';
 }
 
-run();
+// ===== Selection overlay =====
+const overlay = document.getElementById('overlay');
+const box = document.getElementById('box');
+const stage = document.getElementById('stage');
+const out = document.getElementById('out');
+
+let sx, sy, selecting = false;
+
+document.getElementById('start').onclick = () => {
+  overlay.style.display = 'block';
+  stage.textContent = 'Drag to select area';
+};
+
+overlay.onmousedown = e => {
+  sx = e.clientX;
+  sy = e.clientY;
+  selecting = true;
+  box.style.left = sx+'px';
+  box.style.top = sy+'px';
+  box.style.width = '0px';
+  box.style.height = '0px';
+};
+
+overlay.onmousemove = e => {
+  if(!selecting) return;
+  const x = Math.min(e.clientX, sx);
+  const y = Math.min(e.clientY, sy);
+  const w = Math.abs(e.clientX - sx);
+  const h = Math.abs(e.clientY - sy);
+  box.style.left = x+'px';
+  box.style.top = y+'px';
+  box.style.width = w+'px';
+  box.style.height = h+'px';
+};
+
+overlay.onmouseup = async e => {
+  overlay.style.display = 'none';
+  selecting = false;
+
+  const r = box.getBoundingClientRect();
+  box.style.width = box.style.height = '0';
+  
+  stage.textContent = 'Select this tab in dialog…';
+
+  // ===== Screen capture =====
+  const stream = await navigator.mediaDevices.getDisplayMedia({ video:{frameRate:30}, audio:false });
+  const video = document.createElement('video');
+  video.srcObject = stream;
+  await video.play();
+
+  const canvas = document.createElement('canvas');
+  canvas.width = r.width;
+  canvas.height = r.height;
+  canvas.getContext('2d').drawImage(video, r.left, r.top, r.width, r.height, 0, 0, r.width, r.height);
+  stream.getTracks().forEach(t=>t.stop());
+
+  stage.innerHTML = `<img src="${canvas.toDataURL()}" style="max-width:100%">`;
+  out.textContent = 'Explaining…';
+
+  if(!apiKey){
+    apiKey = prompt('Pollinations API key?');
+    if(!apiKey) return;
+    localStorage.apiKey = apiKey;
+  }
+
+  // ===== Streaming explanation =====
+  const res = await fetch('https://gen.pollinations.ai/v1/chat/completions', {
+    method:'POST',
+    headers:{
+      'Authorization':'Bearer '+apiKey,
+      'Content-Type':'application/json'
+    },
+    body: JSON.stringify({
+      model:'openai',
+      stream:true,
+      messages:[{
+        role:'user',
+        content:[
+          {type:'text',text:'Explain what is in this screenshot'},
+          {type:'image_url',image_url:{url:canvas.toDataURL()}}
+        ]
+      }]
+    })
+  });
+
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  out.textContent = '';
+  while(true){
+    const {value, done} = await reader.read();
+    if(done) break;
+    out.textContent += decoder.decode(value);
+    out.scrollTop = out.scrollHeight;
+  }
+
+  stage.textContent = 'Done ✅';
+};
 </script>
 </body>
 </html>
