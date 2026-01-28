@@ -152,54 +152,6 @@
             color: #c33;
         }
 
-        .imgbb-setup {
-            background: #e7f3ff;
-            border: 2px solid #2196F3;
-            border-radius: 8px;
-            padding: 20px;
-            margin-top: 20px;
-        }
-
-        .imgbb-setup h3 {
-            color: #1565C0;
-            margin-bottom: 10px;
-        }
-
-        .imgbb-setup p {
-            color: #1976D2;
-            margin-bottom: 10px;
-        }
-
-        .imgbb-setup a {
-            color: #667eea;
-            font-weight: 600;
-        }
-
-        input[type="text"] {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 14px;
-            margin-top: 10px;
-        }
-
-        button {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-
-        button:hover {
-            opacity: 0.9;
-        }
-
         .api-info {
             background: #d4edda;
             border: 2px solid #c3e6cb;
@@ -227,7 +179,7 @@
 
             <div style="margin-top: 30px;">
                 <p style="margin-bottom: 15px; color: #555;">Drag this button to your bookmarks bar:</p>
-                <a href="javascript:(function(){if(!window.homeworkSolverActive){window.homeworkSolverActive=true;const IMGBB_KEY='b42705170ece739b9fb304ccb3daf53a';let stream;let captureReady=false;(async()=>{try{stream=await navigator.mediaDevices.getDisplayMedia({video:{mediaSource:'screen'}});await new Promise(resolve=>setTimeout(resolve,500));captureReady=true}catch(err){alert('Screen sharing cancelled or failed');window.homeworkSolverActive=false;return}const overlay=document.createElement('div');overlay.id='hw-solver-overlay';overlay.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(102,126,234,0.3);z-index:999999;cursor:crosshair';document.body.appendChild(overlay);const instruction=document.createElement('div');instruction.style.cssText='position:fixed;top:20px;left:50%;transform:translateX(-50%);background:white;padding:20px 30px;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,0.3);z-index:1000000;font-family:system-ui;font-size:16px;color:#333';instruction.textContent='Hold Shift and drag to select an area';document.body.appendChild(instruction);let startX,startY,selectionBox;overlay.addEventListener('mousedown',e=>{if(!e.shiftKey||!captureReady)return;startX=e.clientX;startY=e.clientY;selectionBox=document.createElement('div');selectionBox.style.cssText='position:fixed;border:3px solid #667eea;background:rgba(102,126,234,0.2);z-index:1000000;pointer-events:none';document.body.appendChild(selectionBox)});overlay.addEventListener('mousemove',e=>{if(!selectionBox||!e.shiftKey)return;const currentX=e.clientX;const currentY=e.clientY;const left=Math.min(startX,currentX);const top=Math.min(startY,currentY);const width=Math.abs(currentX-startX);const height=Math.abs(currentY-startY);selectionBox.style.left=left+'px';selectionBox.style.top=top+'px';selectionBox.style.width=width+'px';selectionBox.style.height=height+'px'});overlay.addEventListener('mouseup',async e=>{if(!selectionBox)return;const rect=selectionBox.getBoundingClientRect();overlay.remove();instruction.remove();selectionBox.remove();window.homeworkSolverActive=false;const canvas=document.createElement('canvas');const ctx=canvas.getContext('2d');const scale=window.devicePixelRatio||1;canvas.width=rect.width*scale;canvas.height=rect.height*scale;ctx.scale(scale,scale);try{const video=document.createElement('video');video.srcObject=stream;video.play();await new Promise(resolve=>video.onloadedmetadata=resolve);await new Promise(resolve=>setTimeout(resolve,100));ctx.drawImage(video,rect.left,rect.top,rect.width,rect.height,0,0,rect.width,rect.height);stream.getTracks().forEach(track=>track.stop());canvas.toBlob(async blob=>{const formData=new FormData();formData.append('image',blob);const response=await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`,{method:'POST',body:formData});const data=await response.json();if(data.data){const solverUrl='https://cj-hauser.github.io/lens/?image='+encodeURIComponent(data.data.url);window.open(solverUrl,'_blank')}else{alert('Upload failed: '+(data.error?.message||'Unknown error'))}})}catch(err){alert('Screenshot failed: '+err.message);stream?.getTracks().forEach(track=>track.stop());window.homeworkSolverActive=false}})})();}})();" class="bookmarklet-button">🔍 Solve Homework</a>
+                <a href="javascript:(function(){if(!window.homeworkSolverActive){window.homeworkSolverActive=true;let stream;let captureReady=false;(async()=>{try{stream=await navigator.mediaDevices.getDisplayMedia({video:{mediaSource:'screen'}});await new Promise(resolve=>setTimeout(resolve,500));captureReady=true}catch(err){alert('Screen sharing cancelled: '+err.message);window.homeworkSolverActive=false;return}const overlay=document.createElement('div');overlay.id='hw-solver-overlay';overlay.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(102,126,234,0.3);z-index:999999;cursor:crosshair';document.body.appendChild(overlay);const instruction=document.createElement('div');instruction.style.cssText='position:fixed;top:20px;left:50%;transform:translateX(-50%);background:white;padding:20px 30px;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,0.3);z-index:1000000;font-family:system-ui;font-size:16px;color:#333;font-weight:600';instruction.textContent='✨ Hold Shift and drag to select an area';document.body.appendChild(instruction);let startX,startY,selectionBox;overlay.addEventListener('mousedown',e=>{if(!e.shiftKey||!captureReady)return;startX=e.clientX;startY=e.clientY;selectionBox=document.createElement('div');selectionBox.style.cssText='position:fixed;border:3px solid #667eea;background:rgba(102,126,234,0.2);z-index:1000000;pointer-events:none';document.body.appendChild(selectionBox)});overlay.addEventListener('mousemove',e=>{if(!selectionBox||!e.shiftKey)return;const currentX=e.clientX;const currentY=e.clientY;const left=Math.min(startX,currentX);const top=Math.min(startY,currentY);const width=Math.abs(currentX-startX);const height=Math.abs(currentY-startY);selectionBox.style.left=left+'px';selectionBox.style.top=top+'px';selectionBox.style.width=width+'px';selectionBox.style.height=height+'px'});overlay.addEventListener('mouseup',async e=>{if(!selectionBox||!e.shiftKey)return;const rect=selectionBox.getBoundingClientRect();if(rect.width<10||rect.height<10){alert('Selection too small! Please select a larger area.');selectionBox.remove();return}const loadingMsg=document.createElement('div');loadingMsg.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:white;padding:30px 40px;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,0.3);z-index:1000001;font-family:system-ui;font-size:18px;color:#333;font-weight:600';loadingMsg.textContent='📸 Capturing screenshot...';document.body.appendChild(loadingMsg);overlay.remove();instruction.remove();selectionBox.remove();window.homeworkSolverActive=false;const canvas=document.createElement('canvas');const ctx=canvas.getContext('2d');const scale=window.devicePixelRatio||1;canvas.width=rect.width*scale;canvas.height=rect.height*scale;ctx.scale(scale,scale);try{const video=document.createElement('video');video.srcObject=stream;video.play();await new Promise(resolve=>video.onloadedmetadata=resolve);await new Promise(resolve=>setTimeout(resolve,100));ctx.drawImage(video,rect.left,rect.top,rect.width,rect.height,0,0,rect.width,rect.height);stream.getTracks().forEach(track=>track.stop());const base64=canvas.toDataURL('image/png');loadingMsg.textContent='✅ Opening solver...';const solverUrl='https://cj-hauser.github.io/lens/?img='+encodeURIComponent(base64);window.open(solverUrl,'_blank');setTimeout(()=>loadingMsg.remove(),1000)}catch(err){loadingMsg.remove();alert('Screenshot failed: '+err.message);stream?.getTracks().forEach(track=>track.stop());window.homeworkSolverActive=false}})})();}})();" class="bookmarklet-button">🔍 Solve Homework</a>
             </div>
 
             <div class="instructions">
@@ -251,29 +203,84 @@
 
     <script>
         const POLLINATIONS_API_KEY = 'sk_QhVJoNm1mY2XIAo8MXnwvrCGO4HXvDYw';
+        const IMGBB_API_KEY = 'b42705170ece739b9fb304ccb3daf53a';
 
-        // Check for image parameter in URL
+        // Check for base64 image parameter in URL
         const urlParams = new URLSearchParams(window.location.search);
+        const base64Image = urlParams.get('img');
         const imageUrl = urlParams.get('image');
 
-        if (imageUrl) {
+        if (base64Image || imageUrl) {
             const resultSection = document.getElementById('resultSection');
             const resultContent = document.getElementById('resultContent');
             
             resultSection.classList.add('active');
-            resultContent.innerHTML = `
-                <img src="${imageUrl}" class="image-preview" alt="Problem">
-                <div class="loading">
-                    <div class="spinner"></div>
-                    <p>Analyzing problem with Gemini AI...</p>
-                </div>
-            `;
-
-            // Solve the problem using Pollinations API
-            solveProblem(imageUrl);
+            
+            if (base64Image) {
+                // Show the image immediately
+                resultContent.innerHTML = `
+                    <img src="${base64Image}" class="image-preview" alt="Problem">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Uploading to ImgBB and analyzing problem...</p>
+                    </div>
+                `;
+                
+                // Upload to ImgBB first, then solve
+                uploadAndSolve(base64Image);
+            } else if (imageUrl) {
+                // Direct image URL (fallback)
+                resultContent.innerHTML = `
+                    <img src="${imageUrl}" class="image-preview" alt="Problem">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Analyzing problem with Gemini AI...</p>
+                    </div>
+                `;
+                solveProblem(imageUrl);
+            }
         }
 
-        async function solveProblem(imageUrl) {
+        async function uploadAndSolve(base64Data) {
+            const resultContent = document.getElementById('resultContent');
+            
+            try {
+                // Convert base64 to blob
+                const response = await fetch(base64Data);
+                const blob = await response.blob();
+                
+                // Upload to ImgBB
+                const formData = new FormData();
+                formData.append('image', blob);
+                
+                const uploadResponse = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const uploadData = await uploadResponse.json();
+                
+                if (uploadData.data && uploadData.data.url) {
+                    // Now solve with the uploaded URL
+                    await solveProblem(uploadData.data.url, base64Data);
+                } else {
+                    throw new Error('ImgBB upload failed: ' + (uploadData.error?.message || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Upload error:', error);
+                // If upload fails, try to solve directly with base64
+                resultContent.innerHTML = `
+                    <img src="${base64Data}" class="image-preview" alt="Problem">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Analyzing problem with Gemini AI (using local image)...</p>
+                    </div>
+                `;
+                await solveProblemDirect(base64Data);
+            }
+        }
+
+        async function solveProblem(imageUrl, fallbackBase64) {
             const resultContent = document.getElementById('resultContent');
             
             try {
@@ -286,6 +293,22 @@
                     reader.readAsDataURL(blob);
                 });
 
+                await solveProblemDirect(base64, imageUrl);
+            } catch (error) {
+                console.error('Error fetching image:', error);
+                if (fallbackBase64) {
+                    await solveProblemDirect(fallbackBase64);
+                } else {
+                    throw error;
+                }
+            }
+        }
+
+        async function solveProblemDirect(base64Data, displayImageUrl) {
+            const resultContent = document.getElementById('resultContent');
+            const displayImage = displayImageUrl || base64Data;
+            
+            try {
                 // Call Pollinations API with Gemini
                 const apiResponse = await fetch('https://gen.pollinations.ai/v1/chat/completions', {
                     method: 'POST',
@@ -302,7 +325,7 @@
                                     {
                                         type: 'image_url',
                                         image_url: {
-                                            url: base64
+                                            url: base64Data
                                         }
                                     },
                                     {
@@ -324,17 +347,17 @@
                 const solution = data.choices[0].message.content;
 
                 resultContent.innerHTML = `
-                    <img src="${imageUrl}" class="image-preview" alt="Problem">
+                    <img src="${displayImage}" class="image-preview" alt="Problem">
                     <div class="solution">${solution}</div>
                 `;
             } catch (error) {
                 console.error('Error:', error);
                 resultContent.innerHTML = `
-                    <img src="${imageUrl}" class="image-preview" alt="Problem">
+                    <img src="${displayImage}" class="image-preview" alt="Problem">
                     <div class="error">
                         <strong>Error:</strong> ${error.message}
                         <br><br>
-                        Please make sure the image is accessible and try again.
+                        Please try again or check your internet connection.
                     </div>
                 `;
             }
