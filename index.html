@@ -3,168 +3,241 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Homework Solver</title>
+    <title>CloudGPT | Homework Solver</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
+        :root {
+            --primary: #00f2fe;
+            --secondary: #4facfe;
+            --bg: #0b0e14;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --text: #e0e6ed;
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            background-image: radial-gradient(circle at 2px 2px, rgba(255,255,255,0.05) 1px, transparent 0);
+            background-size: 40px 40px;
+            color: var(--text);
             min-height: 100vh;
-            padding: 20px;
-            color: #333;
+            padding: 40px 20px;
         }
-        .container { max-width: 900px; margin: 0 auto; }
-        .header, .bookmarklet-section, .result-section {
-            background: white;
-            border-radius: 16px;
-            padding: 30px;
+
+        .container { max-width: 850px; margin: 0 auto; }
+
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 40px;
             margin-bottom: 30px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
         }
-        .header h1 { color: #667eea; margin-bottom: 10px; }
-        .bookmarklet-button {
+
+        h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .branding {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--secondary);
+            margin-bottom: 30px;
+            font-weight: 700;
+        }
+
+        .bookmarklet-btn {
             display: inline-block;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px 30px;
-            border-radius: 8px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: #000;
+            padding: 18px 36px;
+            border-radius: 12px;
             text-decoration: none;
-            font-weight: 600;
+            font-weight: 800;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(79, 172, 254, 0.4);
             cursor: move;
-            transition: transform 0.2s;
         }
-        .bookmarklet-button:hover { transform: translateY(-2px); }
-        .instructions { background: #f8f9fa; border-radius: 8px; padding: 20px; margin-top: 20px; }
-        .instructions li { margin: 10px 0; line-height: 1.6; margin-left: 20px; }
-        .result-section { display: none; }
+
+        .bookmarklet-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 0 30px rgba(79, 172, 254, 0.6);
+        }
+
+        .instructions {
+            margin-top: 30px;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            border-radius: 15px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .instructions li { margin-bottom: 10px; color: #a0aec0; }
+
+        .result-section { display: none; animation: fadeIn 0.5s ease; }
         .result-section.active { display: block; }
-        .image-preview { max-width: 100%; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ddd; }
-        .solution { 
-            background: #f8f9fa; 
-            border-radius: 8px; 
-            padding: 20px; 
-            line-height: 1.8; 
-            white-space: pre-wrap;
-            font-size: 16px;
+
+        .image-preview {
+            width: 100%;
+            border-radius: 15px;
+            border: 2px solid var(--secondary);
+            margin-bottom: 25px;
         }
-        .loading { text-align: center; padding: 40px; }
+
+        /* Markdown Styling */
+        .solution-box {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 30px;
+            border-radius: 15px;
+            line-height: 1.7;
+        }
+
+        .solution-box h1, .solution-box h2 { color: var(--primary); margin: 20px 0 10px; }
+        .solution-box code { background: rgba(255,255,255,0.1); padding: 2px 5px; border-radius: 4px; font-family: monospace; }
+        .solution-box p { margin-bottom: 15px; }
+        .solution-box ul, .solution-box ol { margin-left: 25px; margin-bottom: 15px; }
+
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding-bottom: 30px;
+        }
+
+        .yt-link {
+            color: #ff0000;
+            text-decoration: none;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: opacity 0.3s;
+        }
+
+        .yt-link:hover { opacity: 0.8; }
+
+        .loader {
+            text-align: center;
+            padding: 50px;
+        }
+
         .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255,255,255,0.1);
+            border-top: 5px solid var(--primary);
             border-radius: 50%;
-            width: 40px; height: 40px;
             animation: spin 1s linear infinite;
-            margin: 0 auto 15px;
+            margin: 0 auto 20px;
         }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .error { background: #fee; border: 2px solid #fcc; padding: 20px; border-radius: 8px; color: #c33; }
+
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>📚 AI Homework Solver</h1>
-            <p>High-speed visual problem solving powered by Gemini.</p>
-        </div>
 
-        <div class="bookmarklet-section">
-            <h2>🔖 Setup</h2>
-            <p style="margin: 15px 0; color: #666;">Drag this button to your bookmarks bar:</p>
-            
-            <a href="javascript:(function(){if(window.hwSolverActive)return;window.hwSolverActive=true;let stream;const solverUrl='https://cj-hauser.github.io/lens/';(async()=>{try{stream=await navigator.mediaDevices.getDisplayMedia({video:true});const overlay=document.createElement('div');overlay.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(102,126,234,0.3);z-index:999999;cursor:crosshair';document.body.appendChild(overlay);const tip=document.createElement('div');tip.style.cssText='position:fixed;top:20px;left:50%;transform:translateX(-50%);background:white;padding:12px 24px;border-radius:30px;box-shadow:0 4px 15px rgba(0,0,0,0.2);z-index:1000000;font-family:sans-serif;font-weight:bold';tip.textContent='✨ Hold Shift + Drag to Select';document.body.appendChild(tip);let startX,startY,box;overlay.onmousedown=e=>{if(!e.shiftKey)return;startX=e.clientX;startY=e.clientY;box=document.createElement('div');box.style.cssText='position:fixed;border:2px solid #667eea;background:rgba(102,126,234,0.2);z-index:1000000;pointer-events:none';document.body.appendChild(box)};overlay.onmousemove=e=>{if(!box)return;box.style.left=Math.min(startX,e.clientX)+'px';box.style.top=Math.min(startY,e.clientY)+'px';box.style.width=Math.abs(e.clientX-startX)+'px';box.style.height=Math.abs(e.clientY-startY)+'px'};overlay.onmouseup=async e=>{if(!box)return;const rect=box.getBoundingClientRect();overlay.remove();tip.remove();box.remove();const video=document.createElement('video');video.srcObject=stream;await video.play();const canvas=document.createElement('canvas');canvas.width=rect.width;canvas.height=rect.height;canvas.getContext('2d').drawImage(video,rect.left,rect.top,rect.width,rect.height,0,0,rect.width,rect.height);const base64=canvas.toDataURL('image/png');stream.getTracks().forEach(t=>t.stop());const win=window.open(solverUrl,'_blank');window.addEventListener('message',function h(ev){if(ev.data==='READY'){win.postMessage(base64,'*');window.removeEventListener('message',h);window.hwSolverActive=false}})}}catch(err){window.hwSolverActive=false}})()})();" class="bookmarklet-button">🔍 Solve Homework</a>
+    <div class="container">
+        <div class="glass-card">
+            <div class="branding">Powered by CloudGPT by CJ Hauser</div>
+            <h1>📚 AI Homework Solver</h1>
+            <p style="color: #a0aec0; margin-bottom: 30px;">Capture any problem and get instant, detailed solutions.</p>
+
+            <a href="javascript:(function(){if(window.cloudGPTActive)return;window.cloudGPTActive=true;let s;const u='https://cj-hauser.github.io/lens/';(async()=>{try{s=await navigator.mediaDevices.getDisplayMedia({video:true});const o=document.createElement('div');o.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,242,254,0.1);z-index:999999;cursor:crosshair;backdrop-filter:blur(2px)';document.body.appendChild(o);const t=document.createElement('div');t.style.cssText='position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#0b0e14;color:#00f2fe;padding:15px 30px;border-radius:50px;border:1px solid #00f2fe;z-index:1000000;font-family:sans-serif;font-weight:bold;box-shadow:0 0 20px rgba(0,242,254,0.4)';t.textContent='✨ SHIFT + DRAG TO SELECT';document.body.appendChild(t);let sx,sy,b;o.onmousedown=e=>{if(!e.shiftKey)return;sx=e.clientX;sy=e.clientY;b=document.createElement('div');b.style.cssText='position:fixed;border:2px solid #00f2fe;background:rgba(0,242,254,0.2);z-index:1000000;pointer-events:none';document.body.appendChild(b)};o.onmousemove=e=>{if(!b)return;b.style.left=Math.min(sx,e.clientX)+'px';b.style.top=Math.min(sy,e.clientY)+'px';b.style.width=Math.abs(e.clientX-sx)+'px';b.style.height=Math.abs(e.clientY-sy)+'px'};o.onmouseup=async e=>{if(!b)return;const r=b.getBoundingClientRect();o.remove();t.remove();b.remove();const v=document.createElement('video');v.srcObject=s;await v.play();const c=document.createElement('canvas');c.width=r.width;c.height=r.height;c.getContext('2d').drawImage(v,r.left,r.top,r.width,r.height,0,0,r.width,r.height);const d=c.toDataURL('image/png');s.getTracks().forEach(track=>track.stop());const w=window.open(u,'_blank');window.addEventListener('message',function h(ev){if(ev.data==='READY'){w.postMessage(d,'*');window.removeEventListener('message',h);window.cloudGPTActive=false}})}}catch(e){window.cloudGPTActive=false}})()})();" class="bookmarklet-btn">🔍 Solve with CloudGPT</a>
 
             <div class="instructions">
-                <h3>How to use:</h3>
-                <ol>
-                    <li>Drag the <strong>Solve Homework</strong> button to your Bookmarks Bar.</li>
-                    <li>Go to any site (IXL, Canvas, etc.) and click the bookmark.</li>
-                    <li>Select your screen/tab when prompted.</li>
-                    <li><strong>Hold Shift</strong> and drag your mouse over the problem.</li>
-                    <li>Wait for this tab to open with your answer!</li>
-                </ol>
+                <ul style="list-style: none;">
+                    <li>1. Drag the neon button to your <strong>Bookmarks Bar</strong>.</li>
+                    <li>2. Open your homework site and click the bookmark.</li>
+                    <li>3. Select your screen, then <strong>Hold Shift + Drag</strong> over the problem.</li>
+                </ul>
             </div>
         </div>
 
-        <div class="result-section" id="resultSection">
-            <h2>Solution</h2>
+        <div id="resultSection" class="glass-card result-section">
+            <h2 style="margin-bottom: 20px;">CloudGPT Solution</h2>
             <div id="resultContent">
-                <div class="loading">
+                <div class="loader">
                     <div class="spinner"></div>
-                    <p>Waiting for image from bookmarklet...</p>
+                    <p>Connecting to CloudGPT...</p>
                 </div>
             </div>
         </div>
+
+        <footer>
+            <a href="https://www.youtube.com/channel/UC1DISyfD_vehkIvD5fHg0qw/" target="_blank" class="yt-link">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                Subscribe to CJ Hauser
+            </a>
+        </footer>
     </div>
 
     <script>
-        const POLLINATIONS_API_KEY = 'sk_QhVJoNm1mY2XIAo8MXnwvrCGO4HXvDYw';
+        const API_KEY = 'sk_QhVJoNm1mY2XIAo8MXnwvrCGO4HXvDYw';
 
-        // 1. Tell the opener we are ready
         if (window.opener) {
             window.opener.postMessage('READY', '*');
         }
 
-        // 2. Listen for the image data
         window.addEventListener('message', async (event) => {
             if (typeof event.data !== 'string' || !event.data.startsWith('data:image')) return;
 
             const base64Image = event.data;
-            const resultSection = document.getElementById('resultSection');
-            const resultContent = document.getElementById('resultContent');
+            const section = document.getElementById('resultSection');
+            const content = document.getElementById('resultContent');
 
-            resultSection.classList.add('active');
-            resultContent.innerHTML = `
+            section.classList.add('active');
+            section.scrollIntoView({ behavior: 'smooth' });
+
+            content.innerHTML = `
                 <img src="${base64Image}" class="image-preview">
-                <div class="loading">
+                <div class="loader">
                     <div class="spinner"></div>
-                    <p>Gemini is solving your problem...</p>
+                    <p>CloudGPT is analyzing the problem...</p>
                 </div>
             `;
-
-            await solveWithGemini(base64Image);
-        });
-
-        async function solveWithGemini(base64Data) {
-            const resultContent = document.getElementById('resultContent');
-            const currentImageHtml = `<img src="${base64Data}" class="image-preview">`;
 
             try {
                 const response = await fetch('https://gen.pollinations.ai/v1/chat/completions', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${POLLINATIONS_API_KEY}`
+                        'Authorization': `Bearer ${API_KEY}`
                     },
                     body: JSON.stringify({
                         model: 'gemini-fast',
-                        messages: [
-                            {
-                                role: 'user',
-                                content: [
-                                    { type: 'image_url', image_url: { url: base64Data } },
-                                    { type: 'text', text: 'Solve this problem step-by-step. Be concise but thorough.' }
-                                ]
-                            }
-                        ]
+                        messages: [{
+                            role: 'user',
+                            content: [
+                                { type: 'image_url', image_url: { url: base64Image } },
+                                { type: 'text', text: 'Solve this homework problem step-by-step. Use Markdown for formatting. Be thorough but clear.' }
+                            ]
+                        }]
                     })
                 });
 
-                if (!response.ok) throw new Error('AI Service Offline');
-
                 const data = await response.json();
-                const text = data.choices[0].message.content;
+                const markdown = data.choices[0].message.content;
 
-                resultContent.innerHTML = `
-                    ${currentImageHtml}
-                    <div class="solution">${text}</div>
+                content.innerHTML = `
+                    <img src="${base64Image}" class="image-preview">
+                    <div class="solution-box">${marked.parse(markdown)}</div>
                 `;
             } catch (err) {
-                resultContent.innerHTML = `
-                    ${currentImageHtml}
-                    <div class="error"><strong>Error:</strong> ${err.message}</div>
-                `;
+                content.innerHTML = `<div class="error">System Error: ${err.message}</div>`;
             }
-        }
+        });
     </script>
 </body>
 </html>
